@@ -27,7 +27,8 @@ test-all:	trees
 		@echo Testing...
 
 test:	trees
-		@echo Testing...
+		@echo Testing Preliminary...
+		@./trees -g ./Testing/t-0-0.corpus ./Testing/t-0-0.commands
 
 valgrind: trees
 		valgrind ./trees

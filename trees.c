@@ -37,7 +37,7 @@ int main(int argc,char **argv) {
         Fatal("Missing commands file name!\n");
     }
 
-    // Open data file for reading
+    // Open corpus and command files for reading
     corpusFilename = argv[argIndex];
     commandsFilename = argv[++argIndex];
     FILE *corpusFP = fopen(corpusFilename, "r");
@@ -50,9 +50,12 @@ int main(int argc,char **argv) {
         Fatal("Unable to open %s for reading!\n", commandsFilename);
     }
 
+    // TODO: Read and Process corpus file to GST/AVL
     if (gOption == 1) printf("Using GST!\n");
     else printf("Using AVL!\n");
     printf("Reading corpus file: %s\n", corpusFilename);
+
+    //TODO: Read and Process commands file
     printf("Reading commands file: %s\n", commandsFilename);
 
     fclose(corpusFP);
