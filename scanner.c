@@ -51,7 +51,7 @@ static void *reallocateMsg(void *s,size_t size,char *where);
  *        the caller should free the returned string
  *      - returns 0 if end of file; feof will subsequently return true
  *      - usage example: char *x = readLine(stdin);
- *    stringPending(FILE *fp) 
+ *    stringPending(FILE *fp)
  *      - returns true (non-zero) if the next non-whitespace character
  *        is a double quote
  *      - it consumes all the whitespace up to that non-whitespace character
@@ -257,7 +257,7 @@ readLine(FILE *fp)
     int ch,index;
     char *buffer;
     int size = 512;
-    
+
     ch = fgetc(fp);
     if (ch == EOF) return 0;
 

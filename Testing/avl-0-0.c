@@ -1,11 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "integer.h"
-#include "real.h"
-#include "string.h"
-#include "queue.h"
-#include "bst.h"
-#include "avl.h"
+#include "../string.h"
+#include "../queue.h"
+#include "../bst.h"
+#include "../avl.h"
 
 void srandom(unsigned int);
 long int random(void);

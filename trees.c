@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <ctype.h>
 #include "string.h"
 #include "scanner.h"
 
@@ -16,7 +17,8 @@ char *commandsFilename;
 static int processOptions(int, char **);
 void Fatal(char *,...);
 void printAuthor(void);
-void readStringAndTokenFile(FILE *corpusFP);
+void processCorpusToGST(FILE *corpusFP);
+void processCommandsToGST(FILE *commandsFP);
 
 int main(int argc,char **argv) {
     int argIndex;
@@ -50,13 +52,8 @@ int main(int argc,char **argv) {
         Fatal("Unable to open %s for reading!\n", commandsFilename);
     }
 
-    // TODO: Read and Process corpus file to GST/AVL
-    if (gOption == 1) printf("Using GST!\n");
-    else printf("Using AVL!\n");
-    printf("Reading corpus file: %s\n", corpusFilename);
-
-    //TODO: Read and Process commands file
-    printf("Reading commands file: %s\n", commandsFilename);
+    // Process Corpus File
+    processCorpusToGST(corpusFP);
 
     fclose(corpusFP);
     fclose(commandsFP);
@@ -119,11 +116,16 @@ void printAuthor(void) {
 }
 
 
-void readStringAndTokenFile(FILE *fp) {
+void processCorpusToGST(FILE *fp) {
+    // TODO: Clean tokens and strings
+    // TODO: insert to GST
     char *str;
     if (stringPending(fp)) str = readString(fp);
     else str = readToken(fp);
     while (!feof(fp)) {
+        STRING *cleaned = newSTRING(str);
+        displaySTRING(cleaned, stdout);
+        printf("\n");
         if (stringPending(fp)) str = readString(fp);
         else str = readToken(fp);
     }
