@@ -1,6 +1,7 @@
 OBJS = string.o bst.o stack.o queue.o dll.o sll.o scanner.o trees.o
 OOPTS = -Wall -Wextra -std=c99 -g -c
 LOPTS = -Wall -Wextra -std=c99 -g
+EXECUTABLES = trees
 
 all: trees
 
@@ -41,4 +42,4 @@ valgrind: trees
 		valgrind ./trees
 
 clean:
-		rm -f vgcore.* $(OBJS) trees
+		rm -f vgcore.* $(OBJS) $(EXECUTABLES)
