@@ -1,0 +1,19 @@
+0: f(f)X
+1: d[2]+(f)L k(f)R
+2: =c(d[2]+)L =j(k)L =z(k)R
+Duplicates: 1
+Nodes: 6
+Minimum depth: 1
+Maximum depth: 2
+x not found
+l not found
+p not found
+o not found
+0: l+(l+)X
+1: g-(l+)L z+(l+)R
+2: =d(g-)L k[2]+(g-)R =n(z+)L
+3: =h(k[2]+)L
+Duplicates: 2
+Nodes: 7
+Minimum depth: 1
+Maximum depth: 3
