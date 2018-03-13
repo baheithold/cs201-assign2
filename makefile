@@ -1,4 +1,4 @@
-OBJS = string.o queue.o sll.o scanner.o trees.o
+OBJS = string.o queue.o sll.o bst.o gst.o avl.o scanner.o trees.o
 OOPTS = -Wall -Wextra -std=c99 -g -c
 LOPTS = -Wall -Wextra -std=c99 -g
 EXECUTABLES = trees
@@ -16,6 +16,15 @@ queue.o:	queue.c queue.h sll.h
 
 sll.o:	sll.c sll.h
 		gcc $(OOPTS) sll.c
+
+bst.o: 	bst.c bst.h queue.h
+		gcc $(OOPTS) bst.c
+
+gst.o: 	gst.c gst.h bst.h
+		gcc $(OOPTS) gst.c
+
+avl.o: 	avl.c avl.h bst.h
+		gcc $(OOPTS) avl.c
 
 scanner.o:	scanner.c scanner.h
 		gcc $(OOPTS) scanner.c
