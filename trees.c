@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <string.h>
 #include <ctype.h>
+#include <string.h>
 #include "string.h"
 #include "scanner.h"
 
@@ -19,6 +19,7 @@ void Fatal(char *,...);
 void printAuthor(void);
 void processCorpusToGST(FILE *corpusFP);
 void processCommandsToGST(FILE *commandsFP);
+void cleanString(char []);
 
 int main(int argc,char **argv) {
     int argIndex;
@@ -53,7 +54,9 @@ int main(int argc,char **argv) {
     }
 
     // Process Corpus File
-    processCorpusToGST(corpusFP);
+    char str[] = "   this   is a     STRING !     ";
+    cleanString(str);
+    printf("%s\n", str);
 
     fclose(corpusFP);
     fclose(commandsFP);
@@ -129,4 +132,23 @@ void processCorpusToGST(FILE *fp) {
         if (stringPending(fp)) str = readString(fp);
         else str = readToken(fp);
     }
+}
+
+void cleanString(char str[]) {
+    unsigned int i = 0;
+    int n = 0;
+    int inString = 0;
+    for (i = 0; str[i]; ++i) {
+        if (isalpha(str[i])) {
+            // character is a letter a-Z
+            inString = 1;
+            str[n++] = tolower(str[i]);
+        }
+        else {
+            if (inString && !isspace(str[i-1])) {
+                str[n++] = str[i];
+            }
+        }
+    }
+    str[n] = '\0';
 }
