@@ -5,6 +5,8 @@
 #include <string.h>
 #include "string.h"
 #include "scanner.h"
+#include "gst.h"
+#include "avl.h"
 
 /* options */
 int vOption = 0;    /* option -v            */
@@ -17,8 +19,10 @@ char *commandsFilename;
 static int processOptions(int, char **);
 void Fatal(char *,...);
 void printAuthor(void);
-void processCorpusToGST(FILE *corpusFP);
-void processCommandsToGST(FILE *commandsFP);
+void processCorpusToGST(GST *, FILE *);
+void processCorpusToAVL(AVL *, FILE *);
+void processCommandsGST(GST *, FILE *);
+void processCommandsAVL(AVL *, FILE *);
 void cleanString(char []);
 
 int main(int argc,char **argv) {
@@ -54,12 +58,20 @@ int main(int argc,char **argv) {
     }
 
     // Process Corpus File
-    char str[] = "   this   is a     STRING !     ";
-    cleanString(str);
-    printf("%s\n", str);
+    GST *gTree = newGST(displaySTRING, compareSTRING, freeSTRING);
+    AVL *aTree = newAVL(displaySTRING, compareSTRING, freeSTRING);
+    if (gOption) {
+        processCorpusToGST(gTree, corpusFP);
+        processCommandsGST(gTree, commandsFP);
+    }
+    else {
+        processCorpusToAVL(aTree, corpusFP);
+    }
 
     fclose(corpusFP);
     fclose(commandsFP);
+    freeGST(gTree);
+    freeAVL(aTree);
     return 0;
 }
 
@@ -119,16 +131,75 @@ void printAuthor(void) {
 }
 
 
-void processCorpusToGST(FILE *fp) {
-    // TODO: Clean tokens and strings
-    // TODO: insert to GST
+void processCorpusToGST(GST *t, FILE *fp) {
     char *str;
     if (stringPending(fp)) str = readString(fp);
     else str = readToken(fp);
     while (!feof(fp)) {
-        STRING *cleaned = newSTRING(str);
-        displaySTRING(cleaned, stdout);
-        printf("\n");
+        cleanString(str);
+        if (strlen(str) > 0) {
+            // add cleaned string to GST
+            STRING *cleaned = newSTRING(str);
+            insertGST(t, cleaned);
+        }
+        if (stringPending(fp)) str = readString(fp);
+        else str = readToken(fp);
+    }
+}
+
+void processCommandsGST(GST *t, FILE *fp) {
+    char command;
+    char *str;
+    command = readChar(fp);
+    while (!feof(fp)) {
+        switch (command) {
+            case 'i':
+                if (stringPending(fp)) str = readString(fp);
+                else str = readToken(fp);
+                cleanString(str);
+                insertGST(t, newSTRING(str));
+                break;
+            case 'd':
+                if (stringPending(fp)) str = readString(fp);
+                else str = readToken(fp);
+                cleanString(str);
+                deleteGST(t, newSTRING(str));
+                break;
+            case 'f':
+                if (stringPending(fp)) str = readString(fp);
+                else str = readToken(fp);
+                cleanString(str);
+                printf("Frequency of ");
+                displaySTRING(str, stdout);
+                STRING *temp = newSTRING(str);
+                printf(": %d\n", findGSTcount(t, temp));
+                freeSTRING(temp);
+                break;
+            case 's':
+                displayGST(t, stdout);
+                break;
+            case 'r':
+                statisticsGST(t, stdout);
+                break;
+            default:
+                Fatal("Command %c not understood!\n", command);
+                break;
+        }
+        command = readChar(fp);
+    }
+}
+
+void processCorpusToAVL(AVL *t, FILE *fp) {
+    char *str;
+    if (stringPending(fp)) str = readString(fp);
+    else str = readToken(fp);
+    while (!feof(fp)) {
+        cleanString(str);
+        if (strlen(str) > 0) {
+            // add cleaned string to AVL
+            STRING *cleaned = newSTRING(str);
+            insertAVL(t, cleaned);
+        }
         if (stringPending(fp)) str = readString(fp);
         else str = readToken(fp);
     }
@@ -145,7 +216,7 @@ void cleanString(char str[]) {
             str[n++] = tolower(str[i]);
         }
         else {
-            if (inString && !isspace(str[i-1])) {
+            if (inString && !isspace(str[i-1]) && isalpha(str[i+1])) {
                 str[n++] = str[i];
             }
         }

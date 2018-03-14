@@ -29,7 +29,7 @@ avl.o: 	avl.c avl.h bst.h
 scanner.o:	scanner.c scanner.h
 		gcc $(OOPTS) scanner.c
 
-trees.o:	trees.c
+trees.o:	trees.c gst.h avl.h
 		gcc $(OOPTS) trees.c
 
 test-all:	trees
@@ -40,7 +40,7 @@ test:	trees
 		@./trees -g ./Testing/t-0-0.corpus ./Testing/t-0-0.commands
 
 valgrind: trees
-		valgrind ./trees
+		valgrind ./trees -g ./Testing/t-0-0.corpus ./Testing/t-0-0.commands
 
 clean:
 		rm -f vgcore.* $(OBJS) $(EXECUTABLES)
