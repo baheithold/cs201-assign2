@@ -161,7 +161,9 @@ void processCommandsGST(GST *t, FILE *fp) {
                 if (stringPending(fp)) str = readString(fp);
                 else str = readToken(fp);
                 cleanString(str);
-                deleteGST(t, newSTRING(str));
+                if (strlen(str) > 0) {
+                    deleteGST(t, newSTRING(str));
+                }
                 break;
             case 'f':
                 if (stringPending(fp)) str = readString(fp);

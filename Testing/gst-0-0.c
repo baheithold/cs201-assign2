@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "../bst.h"
 #include "../gst.h"
-#include "../string.h"
+#include "../integer.h"
 
 void srandom(unsigned int);
 long int random(void);

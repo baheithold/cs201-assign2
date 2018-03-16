@@ -176,6 +176,7 @@ void *deleteGST(GST *t, void *v) {
         printf("Value ");
         t->display(v, stdout);
         printf(" not found\n");
+        return NULL;
     }
     else if (frequencyGVAL(getBSTNODEvalue(n)) > 1) {
         // Value found, freq > 1 just decrement freq
@@ -242,12 +243,7 @@ void statisticsGST(GST *t, FILE *fp) {
  */
 void displayGST(GST *t, FILE *fp) {
     assert(t != 0);
-    if (t->size > 0) {
-        displayBSTdecorated(t->store, fp);
-    }
-    else {
-        fprintf(fp, "EMPTY\n");
-    }
+    displayBSTdecorated(t->store, fp);
 }
 
 
@@ -261,7 +257,6 @@ void displayGST(GST *t, FILE *fp) {
 void displayGSTdebug(GST *t, FILE *fp) {
     assert(t != 0);
     displayBST(t->store, fp);
-    fprintf(fp, "\n");
 }
 
 
