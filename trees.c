@@ -70,8 +70,6 @@ int main(int argc,char **argv) {
 
     fclose(corpusFP);
     fclose(commandsFP);
-    freeGST(gTree);
-    freeAVL(aTree);
     return 0;
 }
 
