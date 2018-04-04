@@ -157,7 +157,7 @@ void *findGST(GST *t, void *v) {
     GVAL *temp = newGVAL(v, NULL, t->compare, 0);
     BSTNODE *n = findBST(t->store, temp);
     freeGVAL(temp);
-    return n == NULL ? NULL : getBSTNODEvalue(n);
+    return n == NULL ? NULL : getGVALvalue(getBSTNODEvalue(n));
 }
 
 

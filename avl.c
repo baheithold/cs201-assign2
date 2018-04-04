@@ -200,6 +200,7 @@ void *deleteAVL(AVL *t, void *v) {
         if (getAVALcount(getBSTNODEvalue(n)) > 1) {
             // Value has duplicates
             decrementAVALcount(getBSTNODEvalue(n));
+            rv = v;
         }
         else {
             // Value found, no duplicates

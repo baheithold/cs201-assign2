@@ -66,6 +66,7 @@ int main(int argc,char **argv) {
     }
     else {
         processCorpusToAVL(aTree, corpusFP);
+        processCommandsAVL(aTree, commandsFP);
     }
 
     fclose(corpusFP);
@@ -194,6 +195,55 @@ void processCorpusToAVL(AVL *t, FILE *fp) {
         }
         if (stringPending(fp)) str = readString(fp);
         else str = readToken(fp);
+    }
+}
+
+void processCommandsAVL(AVL *t, FILE *fp) {
+    char command;
+    char *str;
+    command = readChar(fp);
+    while (!feof(fp)) {
+        switch (command) {
+            case 'i':
+                if (stringPending(fp)) str = readString(fp);
+                else str = readToken(fp);
+                cleanString(str);
+                if (strlen(str) > 0) {
+                    insertAVL(t, newSTRING(str));
+                }
+                break;
+            case 'd':
+                if (stringPending(fp)) str = readString(fp);
+                else str = readToken(fp);
+                cleanString(str);
+                if (strlen(str) > 0) {
+                    void *deleted = deleteAVL(t, newSTRING(str));
+                    if (deleted == NULL) {
+                        printf("Value %s not found.\n", str);
+                    }
+                }
+                break;
+            case 'f':
+                if (stringPending(fp)) str = readString(fp);
+                else str = readToken(fp);
+                cleanString(str);
+                printf("Frequency of ");
+                displaySTRING(str, stdout);
+                STRING *temp = newSTRING(str);
+                printf(": %d\n", findAVLcount(t, temp));
+                freeSTRING(temp);
+                break;
+            case 's':
+                displayAVL(t, stdout);
+                break;
+            case 'r':
+                statisticsAVL(t, stdout);
+                break;
+            default:
+                Fatal("Command %c not understood!\n", command);
+                break;
+        }
+        command = readChar(fp);
     }
 }
 
