@@ -84,8 +84,6 @@ void Fatal(char *fmt, ...) {
     exit(-1);
 }
 
-/* only -oXXX  or -o XXX options */
-
 static int processOptions(int argc, char **argv) {
     int argIndex = 1;
 
@@ -95,16 +93,6 @@ static int processOptions(int argc, char **argv) {
         if (argv[argIndex][1] == '\0') return argIndex;
 
         switch (argv[argIndex][1]) {
-            /*
-             * when option does not have an argument, do this
-             *
-             *     example is -a
-             *
-             *     case 'a':
-             *         PrintActions = 1;
-             *         break;
-             */
-
             case 'v':
                 vOption = 1;
                 break;
@@ -164,7 +152,7 @@ void processCommandsGST(GST *t, FILE *fp) {
                 cleanString(str);
                 if (strlen(str) > 0) {
                     void *deleted = deleteGST(t, newSTRING(str));
-                    if (!deleted) {
+                    if (deleted == NULL) {
                         printf("Value %s not found.\n", str);
                     }
                 }

@@ -178,6 +178,7 @@ void *deleteGST(GST *t, void *v) {
     else if (frequencyGVAL(getBSTNODEvalue(n)) > 1) {
         // Value found, freq > 1 just decrement freq
         decrementFrequencyGVAL(getBSTNODEvalue(n));
+        rv = v;
     }
     else {
         // Value found, freq == 1, delete from underlying BST
