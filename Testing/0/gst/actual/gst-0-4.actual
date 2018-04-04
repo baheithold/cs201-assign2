@@ -1,0 +1,17 @@
+GST:
+0: 0(0)X
+1: 5(0)R
+2: =1(5)L 8(5)R
+3: =9(8)R
+debug: [0 [5 [1] [8 [9]]]]
+size is 5
+GST:
+0: 1(1)X
+1: 5(1)R
+2: =9(5)R
+debug: [1 [5 [9]]]
+size is 3
+Duplicates: 0
+Nodes: 3
+Minimum depth: 0
+Maximum depth: 2

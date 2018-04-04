@@ -1,0 +1,20 @@
+GST:
+0: 3(3)X
+1: 2(3)L
+2: =1(2)L
+debug: [3 [2 [1]]]
+is 2 present? yes
+GST:
+0: 2(2)X
+1: =1(2)L
+debug: [2 [1]]
+is 2 present? yes
+GST:
+0: =1(1)X
+debug: [1]
+is 2 present? no
+size: 1
+Duplicates: 0
+Nodes: 1
+Minimum depth: 0
+Maximum depth: 0

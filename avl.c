@@ -14,7 +14,6 @@
 typedef struct aval {
     void *value;
     int count;
-    int balance;
     int leftHeight;
     int rightHeight;
     int height;
@@ -32,7 +31,6 @@ AVAL *newAVAL(
     assert(rv != 0);
     rv->value = v;
     rv->count = 1;
-    rv->balance = 0;
     rv->leftHeight = 0;
     rv->rightHeight = 0;
     rv->height = 1;
@@ -66,25 +64,26 @@ void decrementAVALcount(AVAL *av) {
     av->count--;
 }
 
-int getAVALbalance(AVAL *av) {
-    assert(av != 0);
-    return av->balance;
-}
-
 int getAVALheight(AVAL *av) {
+    assert(av != 0);
     return av->height;
 }
 
 void setAVALheight(AVAL *av, int height) {
+    assert(av != 0);
     av->height = height;
 }
 
-void setAVALbalance(AVAL *av, int lh, int rh) {
+int getAVALbalance(AVAL *av) {
+    assert(av != 0);
+    return av->leftHeight - av->rightHeight;
+}
+
+void setAVALbalanceFactors(AVAL *av, int lh, int rh) {
     assert(av != 0);
     av->leftHeight = lh;
     av->rightHeight = rh;
-    av->height = lh > rh ? lh + 1: rh + 1;
-    av->balance = lh - rh;
+    av->height = lh > rh ? lh + 1 : rh + 1;
 }
 
 void adisplay(void *v, FILE *fp) {
@@ -102,7 +101,10 @@ int compareAVAL(void *v, void *w) {
 }
 
 void freeAVAL(void *v) {
-    ((AVAL *)v)->free(getAVALvalue(v));
+    assert(v != 0);
+    if (((AVAL *)v)->free != NULL) {
+        ((AVAL *)v)->free(getAVALvalue(v));
+    }
     free(v);
 }
 
@@ -114,6 +116,8 @@ void rotateTo(AVL *, BSTNODE *, BSTNODE *);
 int isRoot(AVL *, BSTNODE *);
 void swapper(BSTNODE *, BSTNODE *);
 int height(BSTNODE *);
+void setBalance(BSTNODE *);
+int getBalance(BSTNODE *);
 BSTNODE *sibling(BSTNODE *);
 BSTNODE *favoriteChild(BSTNODE *);
 int linear(BSTNODE *c, BSTNODE *p, BSTNODE *gp);
@@ -156,19 +160,20 @@ void insertAVL(AVL *t, void *v) {
     if (n == NULL) {
         // Tree does not contain value
         n = insertBST(t->store, temp);
+        setBalance(n);
         t->insertionFixUp(t, n);
     }
     else {
         // Tree already contains the value
         incrementAVALcount(getBSTNODEvalue(n));
-        freeAVAL(temp);
+        free((AVAL *) temp);
     }
     t->size++;
 }
 
 int findAVLcount(AVL *t, void *v) {
     assert(t != 0);
-    AVAL *temp = newAVAL(v, t->display, t->compare, t->free);
+    AVAL *temp = newAVAL(v, t->display, t->compare, NULL);
     BSTNODE *n = findBST(t->store, temp);
     freeAVAL(temp);
     return n == NULL ? 0 : getAVALcount(getBSTNODEvalue(n));
@@ -176,21 +181,20 @@ int findAVLcount(AVL *t, void *v) {
 
 void *findAVL(AVL *t, void *v) {
     assert(t != 0);
-    AVAL *temp = newAVAL(v, t->display, t->compare, t->free);
+    AVAL *temp = newAVAL(v, NULL, t->compare, NULL);
     BSTNODE *n = findBST(t->store, temp);
     freeAVAL(temp);
-    return n == NULL ? NULL : v;
+    return n == NULL ? NULL : getAVALvalue(getBSTNODEvalue(n));
 }
 
 void *deleteAVL(AVL *t, void *v) {
     void *rv = NULL;
-    AVAL *temp = newAVAL(v, t->display, t->compare, t->free);
+    AVAL *temp = newAVAL(v, t->display, t->compare, NULL);
     BSTNODE *n = findBST(t->store, temp);
     if (n == NULL) {
         // Value not found in tree
-        printf("Value ");
-        t->display(v, stdout);
-        printf(" not found\n");
+        freeAVAL(temp);
+        return NULL;
     }
     else {
         if (getAVALcount(getBSTNODEvalue(n)) > 1) {
@@ -200,11 +204,15 @@ void *deleteAVL(AVL *t, void *v) {
         else {
             // Value found, no duplicates
             BSTNODE *leaf = swapToLeafBST(t->store, n);
-            t->deletionFixUp(t, leaf);
-            setBSTsize(t->store, sizeBST(t->store) - 1);
             rv = getAVALvalue(getBSTNODEvalue(leaf));
+            BSTNODE *p = getBSTNODEparent(leaf);
+            setBalance(leaf);
+            t->deletionFixUp(t, leaf);
             pruneLeafBST(t->store, leaf);
-            freeBSTNODE(leaf, t->free);
+            setBalance(p); // FIXME: Am I correct???
+            setBSTsize(t->store, sizeBST(t->store) - 1);
+            free((AVAL *) getBSTNODEvalue(leaf));
+            freeBSTNODE(leaf, NULL);
         }
         t->size--;
     }
@@ -214,7 +222,7 @@ void *deleteAVL(AVL *t, void *v) {
 
 int sizeAVL(AVL *t) {
     assert(t != 0);
-    return t->size;
+    return sizeBST(t->store);
 }
 
 int duplicatesAVL(AVL *t) {
@@ -223,18 +231,14 @@ int duplicatesAVL(AVL *t) {
 }
 
 void statisticsAVL(AVL *t, FILE *fp) {
+    assert(t != 0);
     fprintf(fp, "Duplicates: %d\n", duplicatesAVL(t));
     statisticsBST(t->store, fp);
 }
 
 void displayAVL(AVL *t, FILE *fp) {
     assert(t != 0);
-    if (t->size > 0) {
-        displayBSTdecorated(t->store, fp);
-    }
-    else {
-        fprintf(fp, "EMPTY\n");
-    }
+    displayBSTdecorated(t->store, fp);
 }
 
 void displayAVLdebug(AVL *t, FILE *fp) {
@@ -256,17 +260,13 @@ void insertionFixUp(AVL *t, BSTNODE *x) {
         if (sibling(x) && sibling(x) == favoriteChild(getBSTNODEparent(x))) {
             // Parent favors sibling
             BSTNODE *p = getBSTNODEparent(x);
-            int lh = height(getBSTNODEleft(p));
-            int rh = height(getBSTNODEright(p));
-            setAVALbalance(getBSTNODEvalue(getBSTNODEparent(x)), lh, rh);
+            setBalance(p);
             break;
         }
         else if (favoriteChild(getBSTNODEparent(x)) == NULL) {
             // Parent is balanced
             BSTNODE *p = getBSTNODEparent(x);
-            int lh = height(getBSTNODEleft(p));
-            int rh = height(getBSTNODEright(p));
-            setAVALbalance(getBSTNODEvalue(getBSTNODEparent(x)), lh, rh);
+            setBalance(p);
             x = p;
         }
         else {
@@ -276,28 +276,18 @@ void insertionFixUp(AVL *t, BSTNODE *x) {
                 t->rotateTo(t, y, x);
                 t->rotateTo(t, y, p);
                 // set balance of x
-                int lh = height(getBSTNODEleft(x));
-                int rh = height(getBSTNODEright(x));
-                setAVALbalance(getBSTNODEvalue(x), lh, rh);
+                setBalance(x);
                 // set balance of p
-                lh = height(getBSTNODEleft(p));
-                rh = height(getBSTNODEright(p));
-                setAVALbalance(getBSTNODEvalue(p), lh, rh);
+                setBalance(p);
                 // set balance of y
-                lh = height(getBSTNODEleft(y));
-                rh = height(getBSTNODEright(y));
-                setAVALbalance(getBSTNODEvalue(y), lh, rh);
+                setBalance(y);
             }
             else {
                 t->rotateTo(t, x, p);
                 // set balance of p
-                int lh = height(getBSTNODEleft(p));
-                int rh = height(getBSTNODEright(p));
-                setAVALbalance(getBSTNODEvalue(p), lh, rh);
+                setBalance(p);
                 // set balance of x
-                lh = height(getBSTNODEleft(x));
-                rh = height(getBSTNODEright(x));
-                setAVALbalance(getBSTNODEvalue(x), lh, rh);
+                setBalance(x);
             }
             break;
         }
@@ -307,86 +297,91 @@ void insertionFixUp(AVL *t, BSTNODE *x) {
 void deletionFixUp(AVL *t, BSTNODE *x) {
     setAVALheight(getBSTNODEvalue(x), 0);
     while (!t->isRoot(t, x)) {
-        if (x == favoriteChild(getBSTNODEparent(x))) {
+        BSTNODE *p = getBSTNODEparent(x);
+        if (x == favoriteChild(p)) {
             // x is favored by parent
-            BSTNODE *p = getBSTNODEparent(x);
-            int lh = height(getBSTNODEleft(p));
-            int rh = height(getBSTNODEright(p));
-            setAVALbalance(getBSTNODEvalue(p), lh, rh);
+            setBalance(p);
             x = p;
         }
-        else if (favoriteChild(getBSTNODEparent(x)) == NULL) {
+        else if (favoriteChild(p) == NULL) {
             // Parent is balanced, has no favorite
-            BSTNODE *p = getBSTNODEparent(x);
-            int lh = height(getBSTNODEleft(p));
-            int rh = height(getBSTNODEright(p));
-            setAVALbalance(getBSTNODEvalue(p), lh, rh);
+            setBalance(p);
             break;
         }
         else {
-            BSTNODE *p = getBSTNODEparent(x);
+            p = getBSTNODEparent(x);
             BSTNODE *z = sibling(x);
             BSTNODE *y = favoriteChild(z);
             if (y && !linear(y, z, p)) {
-                // TODO:
                 t->rotateTo(t, y, z);
                 t->rotateTo(t, y, p);
                 // set balance p
-                int lh = height(getBSTNODEleft(p));
-                int rh = height(getBSTNODEright(p));
-                setAVALbalance(getBSTNODEvalue(p), lh, rh);
+                setBalance(p);
                 // set balance z
-                lh = height(getBSTNODEleft(z));
-                rh = height(getBSTNODEright(z));
-                setAVALbalance(getBSTNODEvalue(z), lh, rh);
+                setBalance(z);
                 // set balance y
-                lh = height(getBSTNODEleft(y));
-                rh = height(getBSTNODEright(y));
-                setAVALbalance(getBSTNODEvalue(y), lh, rh);
+                setBalance(y);
                 x = y;
             }
             else {
-                // TODO:
                 t->rotateTo(t, z, p);
                 // set balance p
-                int lh = height(getBSTNODEleft(p));
-                int rh = height(getBSTNODEright(p));
-                setAVALbalance(getBSTNODEvalue(p), lh, rh);
+                setBalance(p);
                 // set balance z
-                lh = height(getBSTNODEleft(z));
-                rh = height(getBSTNODEright(z));
-                setAVALbalance(getBSTNODEvalue(z), lh, rh);
+                setBalance(z);
                 if (!y) {
                     break;
                 }
                 x = z;
             }
         }
+
     }
 }
 
-void rotateTo(AVL *t, BSTNODE *c, BSTNODE *p) {
-    if (c == getBSTNODEleft(p)) {
-        // c is left child of p, p becomes right child of c
-        setBSTNODEparent(c, getBSTNODEparent(p));
-        setBSTNODEright(c, p);
-        setBSTNODEleft(p, 0);
-        if (getBSTNODEparent(p) != NULL) {
-            setBSTNODEleft(getBSTNODEparent(p), c);
+void rotateTo(AVL *t, BSTNODE *y, BSTNODE *x) {
+    int rootNeedsUpdating = 0;
+    if (t->isRoot(t, x)) rootNeedsUpdating = 1;
+    if (y == getBSTNODEleft(x)) {
+        // Right rotation
+        setBSTNODEleft(x, getBSTNODEright(y));
+        if (getBSTNODEright(y) != NULL) {
+            setBSTNODEparent(getBSTNODEright(y), x);
         }
-        setBSTNODEparent(p, c);
+        setBSTNODEparent(y, getBSTNODEparent(x));
+        if (rootNeedsUpdating) {
+            setBSTNODEparent(y, y);
+            setBSTroot(t->store, y);
+        }
+        else if (x == getBSTNODEright(getBSTNODEparent(x))) {
+            setBSTNODEright(getBSTNODEparent(x), y);
+        }
+        else {
+            setBSTNODEleft(getBSTNODEparent(x), y);
+        }
+        setBSTNODEright(y, x);
+        setBSTNODEparent(x, y);
     }
     else {
-        // c is right child of p, p becomes left child of c
-        setBSTNODEparent(c, getBSTNODEparent(p));
-        setBSTNODEleft(c, p);
-        setBSTNODEright(p, 0);
-        if (getBSTNODEparent(p) != NULL) {
-            setBSTNODEright(getBSTNODEparent(p), c);
+        // Left rotation
+        setBSTNODEright(x, getBSTNODEleft(y));
+        if (getBSTNODEleft(y) != NULL) {
+            setBSTNODEparent(getBSTNODEleft(y), x);
         }
-        setBSTNODEparent(p, c);
+        setBSTNODEparent(y, getBSTNODEparent(x));
+        if (rootNeedsUpdating) {
+            setBSTNODEparent(y, y);
+            setBSTroot(t->store, y);
+        }
+        else if (x == getBSTNODEleft(getBSTNODEparent(x))) {
+            setBSTNODEleft(getBSTNODEparent(x), y);
+        }
+        else {
+            setBSTNODEright(getBSTNODEparent(x), y);
+        }
+        setBSTNODEleft(y, x);
+        setBSTNODEparent(x, y);
     }
-    if (t->isRoot(t, p)) setBSTroot(t->store, c);
 }
 
 int isRoot(AVL *t, BSTNODE *n) {
@@ -407,26 +402,52 @@ void swapper(BSTNODE *a, BSTNODE *b) {
 
 int height(BSTNODE *n) {
     if (n == NULL) return 0;
-    int leftHeight = height(getBSTNODEleft(n));
-    int rightHeight = height(getBSTNODEright(n));
-    return leftHeight > rightHeight ? leftHeight + 1 : rightHeight + 1;
+    BSTNODE *leftChild = getBSTNODEleft(n);
+    BSTNODE *rightChild = getBSTNODEright(n);
+    int lh = 0;
+    int rh = 0;
+    if (leftChild) lh = ((AVAL *)getBSTNODEvalue(leftChild))->height;
+    if (rightChild) rh = ((AVAL *)getBSTNODEvalue(rightChild))->height;
+    return lh > rh ? lh + 1 : rh + 1;
+}
+
+int getBalance(BSTNODE *n) {
+    assert(n != 0);
+    return getAVALbalance(getBSTNODEvalue(n));
+}
+
+void setBalance(BSTNODE *n) {
+    assert(n != 0);
+    BSTNODE *leftChild = getBSTNODEleft(n);
+    BSTNODE *rightChild = getBSTNODEright(n);
+    AVAL *av = getBSTNODEvalue(n);
+    setAVALbalanceFactors(av, height(leftChild), height(rightChild));
+    int lh = 0;
+    int rh = 0;
+    if (leftChild) {
+        lh = getAVALheight(getBSTNODEvalue(leftChild));
+    }
+    if (rightChild) {
+        rh = getAVALheight(getBSTNODEvalue(rightChild));
+    }
+    setAVALheight(av, lh > rh ? lh + 1 : rh + 1);
 }
 
 BSTNODE *sibling(BSTNODE *c) {
     assert(c != 0);
     BSTNODE *parent = getBSTNODEparent(c);
-    if (parent == NULL) return NULL;
+    if (parent == c) return NULL; // Root
     else if (getBSTNODEleft(parent) == c) return getBSTNODEright(parent);
     else return getBSTNODEleft(parent);
 }
 
 BSTNODE *favoriteChild(BSTNODE *p) {
     assert(p != 0);
-    if (getAVALbalance(getBSTNODEvalue(p)) == 1) {
+    if (getBalance(p) == 1) {
         // Left child is favorite
         return getBSTNODEleft(p);
     }
-    else if (getAVALbalance(getBSTNODEvalue(p)) == -1) {
+    else if (getBalance(p) == -1) {
         // Right child is favorite
         return getBSTNODEright(p);
     }
@@ -435,6 +456,9 @@ BSTNODE *favoriteChild(BSTNODE *p) {
 }
 
 int linear(BSTNODE *c, BSTNODE *p, BSTNODE *gp) {
+    assert(c != NULL);
+    assert(p != NULL);
+    assert(gp != NULL);
     int leftLinear = getBSTNODEleft(gp) == p && getBSTNODEleft(p) == c;
     int rightLinear = getBSTNODEright(gp) == p && getBSTNODEright(p) == c;
     return leftLinear || rightLinear;

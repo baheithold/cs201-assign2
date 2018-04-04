@@ -1,0 +1,27 @@
+Duplicates: 0
+Nodes: 3
+Minimum depth: 1
+Maximum depth: 1
+AVL:
+0: 2.000000(2.000000)X
+1: =1.000000(2.000000)L =3.000000(2.000000)R
+debug: [2.000000 [1.000000] [3.000000]]
+is 2.000000 present? yes
+Duplicates: 0
+Nodes: 2
+Minimum depth: 0
+Maximum depth: 1
+AVL:
+0: 2.000000+(2.000000+)X
+1: =1.000000(2.000000+)L
+debug: [2.000000+ [1.000000]]
+is 2.000000 present? yes
+Duplicates: 0
+Nodes: 1
+Minimum depth: 0
+Maximum depth: 0
+AVL:
+0: =1.000000(1.000000)X
+debug: [1.000000]
+is 2.000000 present? no
+size: 1

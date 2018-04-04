@@ -137,8 +137,7 @@ void processCorpusToGST(GST *t, FILE *fp) {
         cleanString(str);
         if (strlen(str) > 0) {
             // add cleaned string to GST
-            STRING *cleaned = newSTRING(str);
-            insertGST(t, cleaned);
+            insertGST(t, newSTRING(str));
         }
         if (stringPending(fp)) str = readString(fp);
         else str = readToken(fp);
@@ -155,14 +154,19 @@ void processCommandsGST(GST *t, FILE *fp) {
                 if (stringPending(fp)) str = readString(fp);
                 else str = readToken(fp);
                 cleanString(str);
-                insertGST(t, newSTRING(str));
+                if (strlen(str) > 0) {
+                    insertGST(t, newSTRING(str));
+                }
                 break;
             case 'd':
                 if (stringPending(fp)) str = readString(fp);
                 else str = readToken(fp);
                 cleanString(str);
                 if (strlen(str) > 0) {
-                    deleteGST(t, newSTRING(str));
+                    void *deleted = deleteGST(t, newSTRING(str));
+                    if (!deleted) {
+                        printf("Value %s not found.\n", str);
+                    }
                 }
                 break;
             case 'f':
@@ -205,21 +209,53 @@ void processCorpusToAVL(AVL *t, FILE *fp) {
     }
 }
 
+/*
 void cleanString(char str[]) {
-    unsigned int i = 0;
+    int i = 0;
     int n = 0;
     int inString = 0;
+    printf("Cleaning: \"%s\"\t", str);
     for (i = 0; str[i]; ++i) {
         if (isalpha(str[i])) {
             // character is a letter a-Z
             inString = 1;
             str[n++] = tolower(str[i]);
         }
+        else if (ispunct(str[i])) {
+            continue;
+        }
         else {
-            if (inString && !isspace(str[i-1]) && isalpha(str[i+1])) {
+            if (inString && !isspace(str[n-1])) {
+                if (str[i] == ' ') inString = 0;
                 str[n++] = str[i];
             }
         }
     }
     str[n] = '\0';
+    printf("Cleaned: \"%s\"\n", str);
+}
+*/
+
+void cleanString(char str[]) {
+    int i = 0;
+    int n = 0;
+    int inString = 0;
+    int prevSpace = 0;
+    //printf("Cleaning: \"%s\"\t", str);
+    while (str[i]) {
+        if (isalpha(str[i])) {
+            if (inString && prevSpace) {
+                str[n++] = ' ';
+            }
+            str[n++] = tolower(str[i]);
+            inString = 1;
+            prevSpace = 0;
+        }
+        else if (isspace(str[i])) {
+            prevSpace = 1;
+        }
+        i++;
+    }
+    str[n] = '\0';
+    //printf("Cleaned: \"%s\"\n", str);
 }

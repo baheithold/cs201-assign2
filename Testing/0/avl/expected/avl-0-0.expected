@@ -1,0 +1,27 @@
+Duplicates: 0
+Nodes: 3
+Minimum depth: 1
+Maximum depth: 1
+AVL:
+0: 2(2)X
+1: =1(2)L =3(2)R
+debug: [2 [1] [3]]
+is 2 present? yes
+Duplicates: 0
+Nodes: 2
+Minimum depth: 0
+Maximum depth: 1
+AVL:
+0: 2+(2+)X
+1: =1(2+)L
+debug: [2+ [1]]
+is 2 present? yes
+Duplicates: 0
+Nodes: 1
+Minimum depth: 0
+Maximum depth: 0
+AVL:
+0: =1(1)X
+debug: [1]
+is 2 present? no
+size: 1

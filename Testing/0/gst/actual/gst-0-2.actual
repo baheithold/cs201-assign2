@@ -1,0 +1,20 @@
+GST:
+0: a3(a3)X
+1: a2(a3)L
+2: =a1(a2)L
+debug: [a3 [a2 [a1]]]
+is a2 present? yes
+GST:
+0: a2(a2)X
+1: =a1(a2)L
+debug: [a2 [a1]]
+is a2 present? yes
+GST:
+0: =a1(a1)X
+debug: [a1]
+is a2 present? no
+size: 1
+Duplicates: 0
+Nodes: 1
+Minimum depth: 0
+Maximum depth: 0

@@ -303,6 +303,7 @@ BSTNODE *insertBST(BST *t, void *value) {
     setBSTNODEparent(n, p);
     if (p == NULL) {
         setBSTroot(t, n);
+        setBSTNODEparent(n, n);
     }
     else if (t->compare(value, getBSTNODEvalue(p)) < 0) {
         // Set the new node to be the left child of p
@@ -563,7 +564,7 @@ void freeBST(BST *t) {
  *  Description:
  */
 void swapper(BSTNODE *x, BSTNODE *y) {
-    // TODO: Do I work correctly?
+    // TODO: Do I work correctly? NO, i THINK
     assert(x != 0 && y != 0);
     void *tmp = getBSTNODEvalue(x);
     setBSTNODEvalue(x, getBSTNODEvalue(y));
@@ -578,10 +579,7 @@ void swapper(BSTNODE *x, BSTNODE *y) {
  */
 int isRoot(BST *t, BSTNODE *n) {
     assert(t != 0 && n != 0);
-    if (t->compare(getBSTNODEvalue(n), getBSTNODEvalue(t->root)) == 0) {
-        return 1;
-    }
-    return 0;
+    return (n == t->root) ? 1 : 0;
 }
 
 
@@ -735,8 +733,6 @@ BSTNODE *getPredecessor(BST *t, BSTNODE *n) {
  *  Description:
  */
 void displayPreorder(BST *t, BSTNODE *n, FILE *fp) {
-    // TODO: Am I correct?
-    // TODO: Am I efficient?
     assert(t != 0);
     if (n == NULL) return;
     t->display(getBSTNODEvalue(n), fp);
