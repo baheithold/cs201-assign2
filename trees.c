@@ -153,7 +153,7 @@ void processCommandsGST(GST *t, FILE *fp) {
                 cleanString(str);
                 if (strlen(str) > 0) {
                     void *deleted = deleteGST(t, newSTRING(str));
-                    if (deleted == NULL) {
+                    if (!deleted) {
                         printf("Value %s not found.\n", str);
                     }
                 }
@@ -162,10 +162,8 @@ void processCommandsGST(GST *t, FILE *fp) {
                 if (stringPending(fp)) str = readString(fp);
                 else str = readToken(fp);
                 cleanString(str);
-                printf("Frequency of ");
-                displaySTRING(str, stdout);
                 STRING *temp = newSTRING(str);
-                printf(": %d\n", findGSTcount(t, temp));
+                printf("Frequency of %s: %d\n", str, findGSTcount(t, temp));
                 freeSTRING(temp);
                 break;
             case 's':
@@ -218,7 +216,7 @@ void processCommandsAVL(AVL *t, FILE *fp) {
                 cleanString(str);
                 if (strlen(str) > 0) {
                     void *deleted = deleteAVL(t, newSTRING(str));
-                    if (deleted == NULL) {
+                    if (!deleted) {
                         printf("Value %s not found.\n", str);
                     }
                 }
@@ -227,10 +225,8 @@ void processCommandsAVL(AVL *t, FILE *fp) {
                 if (stringPending(fp)) str = readString(fp);
                 else str = readToken(fp);
                 cleanString(str);
-                printf("Frequency of ");
-                displaySTRING(str, stdout);
                 STRING *temp = newSTRING(str);
-                printf(": %d\n", findAVLcount(t, temp));
+                printf("Frequency of %s: %d\n", str, findAVLcount(t, temp));
                 freeSTRING(temp);
                 break;
             case 's':
@@ -246,33 +242,6 @@ void processCommandsAVL(AVL *t, FILE *fp) {
         command = readChar(fp);
     }
 }
-
-/*
-void cleanString(char str[]) {
-    int i = 0;
-    int n = 0;
-    int inString = 0;
-    printf("Cleaning: \"%s\"\t", str);
-    for (i = 0; str[i]; ++i) {
-        if (isalpha(str[i])) {
-            // character is a letter a-Z
-            inString = 1;
-            str[n++] = tolower(str[i]);
-        }
-        else if (ispunct(str[i])) {
-            continue;
-        }
-        else {
-            if (inString && !isspace(str[n-1])) {
-                if (str[i] == ' ') inString = 0;
-                str[n++] = str[i];
-            }
-        }
-    }
-    str[n] = '\0';
-    printf("Cleaned: \"%s\"\n", str);
-}
-*/
 
 void cleanString(char str[]) {
     int i = 0;

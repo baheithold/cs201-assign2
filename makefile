@@ -105,6 +105,16 @@ testTreesAVL: 	all
 		diff ./Testing/0/trees/expected/$$x-r.expected ./Testing/0/trees/actual/$$x-r.actual; \
 		done
 
+testTreesBeowulf: 	all
+	@echo Testing Beowulf GST...; \
+	./trees -g ./Testing/big/beowulf.data ./Testing/big/beowulf.more \
+	> ./Testing/big/actual/beowulf-g.actual; \
+	diff ./Testing/big/expected/beowulf-g.expected ./Testing/big/actual/beowulf-g.actual;
+	@echo Testing Beowulf AVL...; \
+	./trees -r ./Testing/big/beowulf.data ./Testing/big/beowulf.more \
+	> ./Testing/big/actual/beowulf-r.actual; \
+	diff ./Testing/big/expected/beowulf-r.expected ./Testing/big/actual/beowulf-r.actual;
+
 ################################################################################
 #                                            Valgrind everything except trees
 
