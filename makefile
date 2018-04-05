@@ -113,7 +113,25 @@ testTreesBeowulf: 	all
 	@echo Testing Beowulf AVL...; \
 	./trees -r ./Testing/big/beowulf.data ./Testing/big/beowulf.more \
 	> ./Testing/big/actual/beowulf-r.actual; \
-	diff ./Testing/big/expected/beowulf-r.expected ./Testing/big/actual/beowulf-r.actual;
+	diff ./Testing/big/expected/beowulf-r.expected ./Testing/big/actual/beowulf-r.actual
+
+testTreesShakespeare: 	all
+	@echo Testing Shakespeare GST...; \
+	./trees -g ./Testing/big/shakespeare.data ./Testing/big/shakespeare.more \
+	> ./Testing/big/actual/shakespeare-g.actual; \
+	diff ./Testing/big/expected/shakespeare-g.expected ./Testing/big/actual/shakespeare-g.actual;
+	@echo Testing Shakespeare AVL...; \
+	./trees -r ./Testing/big/shakespeare.data ./Testing/big/shakespeare.more \
+	> ./Testing/big/actual/shakespeare-r.actual; \
+	diff ./Testing/big/expected/shakespeare-r.expected ./Testing/big/actual/shakespeare-r.actual
+
+testTreesWords: 	all
+	@echo Testing Words GST...; \
+	./trees -g ./Testing/big/words.data ./Testing/big/words.more \
+	> ./Testing/big/actual/words-g.actual;
+	@echo Testing Words AVL...; \
+	./trees -r ./Testing/big/words.data ./Testing/big/words.more \
+	> ./Testing/big/actual/words-r.actual;
 
 ################################################################################
 #                                            Valgrind everything except trees
